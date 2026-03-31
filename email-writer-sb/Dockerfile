@@ -1,21 +1,19 @@
- Copy Maven config and source
+ # 1. Build stage
+FROM maven:3.8.6-openjdk-17 AS build
+WORKDIR /app
+
+# copy pom and src
 COPY pom.xml .
-COPY .mvn/ .mvn
-COPY mvnw .
 COPY src ./src
 
-# Build the jar
 RUN ./mvnw clean package -DskipTests
 
-# Run stage
+# 2. Runtime image
 FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
-# Copy the built jar into container
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose Spring Boot default port
 EXPOSE 8080
 
-# Start Spring Boot app
 ENTRYPOINT ["java", "-jar", "app.jar"]
